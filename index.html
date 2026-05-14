@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrustNoChar | Typosquat Lab</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --panel: #111118;
+      --accent: #00ff41;
+      --accent-dim: #00cc33;
+      --text: #e0e0e0;
+      --warn: #ff3366;
+      --font-sans: 'Segoe UI', system-ui, sans-serif;
+      --font-mono: 'Fira Code', 'Consolas', monospace;
+      --font-serif: 'Georgia', serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--font-sans); line-height: 1.6;
+      padding: 2rem; min-height: 100vh;
+    }
+    .banner {
+      text-align: center; margin-bottom: 2rem;
+    }
+    .banner h1 {
+      font-family: var(--font-mono); font-size: 3rem; letter-spacing: 4px;
+      color: var(--accent); text-transform: uppercase;
+      text-shadow: 0 0 10px var(--accent), 0 0 20px rgba(0,255,65,0.3);
+      animation: glitch 3s infinite alternate;
+    }
+    .banner p { color: #888; font-size: 0.9rem; margin-top: 0.5rem; }
+    
+    @keyframes glitch {
+      0%, 100% { text-shadow: 0 0 10px var(--accent); }
+      25% { text-shadow: -2px 0 var(--warn), 2px 0 cyan; transform: translate(1px, 1px); }
+      50% { text-shadow: 2px 0 var(--warn), -2px 0 cyan; transform: translate(-1px, -1px); }
+      75% { text-shadow: 0 0 5px var(--accent); }
+    }
+
+    .container {
+      max-width: 900px; margin: 0 auto;
+      background: var(--panel); padding: 2rem; border-radius: 12px;
+      border: 1px solid #222; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; align-items: center;
+    }
+    .controls label { font-size: 0.9rem; color: #aaa; }
+    .controls input[type="range"] { flex: 1; accent-color: var(--accent); }
+    .btn-group { display: flex; gap: 0.5rem; }
+    .btn {
+      background: #222; color: var(--accent); border: 1px solid #333;
+      padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;
+      font-family: var(--font-mono); transition: 0.2s;
+    }
+    .btn:hover { background: #333; border-color: var(--accent); }
+    .btn.active { background: var(--accent); color: var(--bg); font-weight: bold; }
+
+    textarea, .output-box {
+      width: 100%; padding: 1rem; font-size: 1.1rem;
+      background: #0d0d12; color: var(--text); border: 1px solid #333;
+      border-radius: 8px; resize: vertical; min-height: 120px;
+      font-family: inherit;
+    }
+    .output-box {
+      font-family: var(--font-sans); line-height: 1.8; white-space: pre-wrap;
+      background: #08080c; cursor: default;
+    }
+    .output-box .spoof {
+      border-bottom: 1px dashed var(--warn); position: relative;
+      color: var(--warn); font-weight: bold;
+    }
+    .output-box .spoof:hover { background: rgba(255,51,102,0.1); }
+    .output-box .spoof::after {
+      content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%;
+      transform: translateX(-50%); background: #111; color: #fff;
+      padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem;
+      white-space: nowrap; pointer-events: none; opacity: 0; transition: 0.2s;
+      border: 1px solid #333;
+    }
+    .output-box .spoof:hover::after { opacity: 1; }
+
+    .actions { margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: flex-end; }
+    .copy-btn { background: var(--accent-dim); color: var(--bg); border: none; }
+    .copy-btn:hover { background: var(--accent); }
+
+    footer {
+      text-align: center; margin-top: 2rem; padding-top: 1rem;
+      border-top: 1px solid #222; color: #666; font-size: 0.85rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    .disclaimer {
+      background: rgba(255,51,102,0.1); border: 1px solid var(--warn);
+      color: #ff99b0; padding: 0.8rem; border-radius: 6px;
+      font-size: 0.8rem; margin-bottom: 1.5rem; text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <h1>TrustNoChar</h1>
+    <p>Human perception is the weakest link. Verify, don't trust.</p>
+  </div>
+
+  <div class="container">
+    <div class="disclaimer">
+      ⚠️ Educational & defensive demo only. Do not use for malicious spoofing. 
+      Homoglyphs exploit cognitive autopilot, not system flaws.
+    </div>
+
+    <div class="controls">
+      <label>Deception Intensity: <span id="intensity-val">60%</span></label>
+      <input type="range" id="intensity" min="0" max="100" value="60">
+      
+      <div class="btn-group" id="font-toggle">
+        <button class="btn active" data-font="sans">Sans</button>
+        <button class="btn" data-font="mono">Mono</button>
+        <button class="btn" data-font="serif">Serif</button>
+      </div>
+    </div>
+
+    <textarea id="input" placeholder="Enter name, paragraph, domain, etc...">example.com
+Hello, I'm Aryan. Check my portfolio at github.com/giriaryan694-a11y
+Password123</textarea>
+
+    <div class="output-box" id="output">Spoofed text will appear here...</div>
+
+    <div class="actions">
+      <button class="btn copy-btn" id="copy-btn">📋 Copy Spoofed Text</button>
+    </div>
+  </div>
+
+  <footer>
+    Made By Aryan Giri | <a href="https://github.com/giriaryan694-a11y" target="_blank">giriaryan694-a11y</a>
+  </footer>
+
+  <script>
+    // Curated, high-reliability homoglyph map (Cyrillic/Greek/Latin mix)
+    const GLYPH_MAP = {
+      'a':'а','b':'ƃ','c':'с','d':'ԁ','e':'е','f':'ƒ','g':'ɡ','h':'һ',
+      'i':'і','j':'ј','k':'κ','l':'ӏ','m':'м','n':'п','o':'ο','p':'р',
+      'q':'ԛ','r':'г','s':'ѕ','t':'т','u':'ս','v':'ν','w':'ԝ','x':'х',
+      'y':'у','z':'ᴢ',
+      'A':'А','B':'В','C':'С','D':'Ԁ','E':'Е','F':'Ғ','G':'Ԍ','H':'Н',
+      'I':'І','J':'Ј','K':'К','L':'Լ','M':'М','N':'Ν','O':'О','P':'Р',
+      'Q':'Ԛ','R':'Г','S':'Տ','T':'Т','U':'Ս','V':'Ѵ','W':'Ԝ','X':'Х',
+      'Y':'У','Z':'ᴢ',
+      '0':'О','1':'ӏ','2':'ᄀ','3':'ᴢ','4':'Ꮞ','5':'ѕ','6':'б','7':'⳼','8':'₈','9':'٩'
+    };
+
+    const inputEl = document.getElementById('input');
+    const outputEl = document.getElementById('output');
+    const intensityEl = document.getElementById('intensity');
+    const intensityValEl = document.getElementById('intensity-val');
+    const copyBtn = document.getElementById('copy-btn');
+    const fontBtns = document.querySelectorAll('#font-toggle .btn');
+
+    let currentFont = 'sans';
+
+    function generateSpoof(text, probability) {
+      return text.split('').map(char => {
+        if (Math.random() > probability) return char;
+        if (GLYPH_MAP[char]) {
+          const spoof = GLYPH_MAP[char];
+          return `<span class="spoof" data-tooltip="${char} (U+${char.charCodeAt(0).toString(16).padStart(4,'0').toUpperCase()}) → ${spoof} (U+${spoof.charCodeAt(0).toString(16).padStart(4,'0').toUpperCase()})">${spoof}</span>`;
+        }
+        return char;
+      }).join('');
+    }
+
+    function updateOutput() {
+      const prob = intensityEl.value / 100;
+      outputEl.innerHTML = generateSpoof(inputEl.value, prob);
+      outputEl.style.fontFamily = currentFont === 'sans' ? 'var(--font-sans)' : 
+                                   currentFont === 'mono' ? 'var(--font-mono)' : 'var(--font-serif)';
+    }
+
+    intensityEl.addEventListener('input', () => {
+      intensityValEl.textContent = intensityEl.value + '%';
+      updateOutput();
+    });
+
+    inputEl.addEventListener('input', updateOutput);
+
+    fontBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        fontBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFont = btn.dataset.font;
+        updateOutput();
+      });
+    });
+
+    copyBtn.addEventListener('click', () => {
+      const text = outputEl.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = '✅ Copied!';
+        setTimeout(() => copyBtn.textContent = '📋 Copy Spoofed Text', 2000);
+      });
+    });
+
+    // Init
+    updateOutput();
+  </script>
+</body>
+</html>
